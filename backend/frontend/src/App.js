@@ -6,7 +6,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { Typography } from '@material-ui/core';
 import { Button } from '@material-ui/core';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -17,7 +16,6 @@ import { DialogContent } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { Collapse } from '@material-ui/core';
 import { IconButton } from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
 import { DialogContentText } from '@material-ui/core';
 import { DialogActions } from '@material-ui/core';
 import { TextField } from '@material-ui/core';
@@ -89,7 +87,7 @@ export default function App() {
    const [errorOpen, setErrorOpen] = React.useState(false)
 
   const recordWin = (w) => {
-    fetch("http://localhost:3001/game-results", {
+    fetch("/game-results", {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -147,7 +145,7 @@ export default function App() {
   const score = () => {
     if( (moveOne==='rock'||moveOne==='paper'||moveOne==='scissors')
      && (moveTwo==='rock'||moveTwo==='paper'||moveTwo==='scissors')){
-      fetch("http://localhost:3001/game?player1="+ moveOne +"&player2=" + moveTwo)
+      fetch("/game?player1="+ moveOne +"&player2=" + moveTwo)
       .then((res)=>res.json())
       .then((data)=>{
         if(data.results==='Player 1 Wins')
@@ -167,7 +165,7 @@ export default function App() {
   const [errorAlert, setErrorAlert] = useState(false)
   const [successAlert, setSuccessAlert] = useState(false)
   const login = () => {
-    fetch("http://localhost:3001/login", {
+    fetch("/login", {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -191,7 +189,7 @@ export default function App() {
     })
   }
   const signup = () => {
-    fetch("http://localhost:3001/sign-up", {
+    fetch("/sign-up", {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -229,7 +227,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   useEffect(()=>{
-    fetch("http://localhost:3001/is-logged-in", {credentials: 'include'})
+    fetch("/is-logged-in", {credentials: 'include'})
       .then((res)=>res.json())
       .then((data)=> {
         if(data.loggedIn===true)
@@ -238,18 +236,18 @@ export default function App() {
           setIsAdmin(true)
       })
     if(isAdmin)
-      fetch("http://localhost:3001/leaderboard", {credentials: 'include'})
+      fetch("/leaderboard", {credentials: 'include'})
         .then((res)=>res.json())
         .then((data)=>{
           setLeaderboard(data)
           setHistory([])
         })
     else if(!isLoggedIn)
-      fetch("http://localhost:3001/game-results", {credentials: 'include'})
+      fetch("/game-results", {credentials: 'include'})
       .then((res)=>res.json())
       .then((data)=>setHistory(data))
     else
-      fetch("http://localhost:3001/game-results/user", {credentials: 'include'})
+      fetch("/game-results/user", {credentials: 'include'})
       .then((res)=>res.json())
       .then((data)=>setHistory(data))
   }, [drawerOpen])
