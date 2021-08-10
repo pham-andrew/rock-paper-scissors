@@ -26,6 +26,12 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Divider } from '@material-ui/core';
 import { List } from '@material-ui/core';
 import { ListItem } from '@material-ui/core';
+import { FormControlLabel } from '@material-ui/core';
+import { Checkbox } from '@material-ui/core';
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
@@ -49,34 +55,18 @@ const useStyles = makeStyles((theme) => ({
   mt: {
     marginTop: '50px',
   },
-
-
   menuButton: {
     marginRight: 36,
   },
   menuButtonHidden: {
     display: 'none',
   },
-  // drawerPaper: {
-  //   position: 'relative',
-  //   whiteSpace: 'nowrap',
-  //   width: drawerWidth,
-  //   transition: theme.transitions.create('width', {
-  //     easing: theme.transitions.easing.sharp,
-  //     duration: theme.transitions.duration.enteringScreen,
-  //   }),
-  // },
-  // drawerPaperClose: {
-  //   overflowX: 'hidden',
-  //   transition: theme.transitions.create('width', {
-  //     easing: theme.transitions.easing.sharp,
-  //     duration: theme.transitions.duration.leavingScreen,
-  //   }),
-  //   width: theme.spacing(7),
-  //   [theme.breakpoints.up('sm')]: {
-  //     width: theme.spacing(9),
-  //   },
-  // },
+  ml: {
+    marginLeft: '20px'
+  },
+  l: {
+    marginLeft: '0px'
+  },
 }));
 
 export default function App() {
@@ -96,15 +86,7 @@ export default function App() {
   const [moveOne, setMoveOne] = React.useState('')
   const [moveTwo, setMoveTwo] = React.useState('')
 
-  const [rerender, triggerRerender] = useState(0);
-
-  // const [oneWinsOpen, setOneWinsOpen] = React.useState(false)
-  // const [twoWinsOpen, setTwoWinsOpen] = React.useState(false)
-  // const [drawOpen, setDrawOpen] = React.useState(false)
    const [errorOpen, setErrorOpen] = React.useState(false)
-  // const [scoreOpen, setScoreOpen] = React.useState(false)
-  // const [setOneOpen, setSetOneOpen] = React.useState(false)
-  // const [setTwoOpen, setSetTwoOpen] = React.useState(false)
 
   const recordWin = (w) => {
     fetch("http://localhost:3001/game-results", {
@@ -124,78 +106,33 @@ export default function App() {
     setOneScore(oneScore + 1)
     setLog(log.concat(["Player 1 Wins, Score: " + oneScoreRef.current]))
     handleSet()
-    //setOneWinsOpen(true)
-    //setTimeout(function(){ setOneWinsOpen(false) }, 3000)
     recordWin(true)
   }
   const handleTwoWin = () => {
     setTwoScore(twoScore + 1)
     setLog(log.concat(["Player 2 Wins, Score: " + twoScoreRef.current]))
     handleSet()
-    //setTwoWinsOpen(true)
-    //setTimeout(function(){ setTwoWinsOpen(false) }, 3000)
     recordWin(false)
   }
   const handleDraw = () => {
     setLog(log.concat(["Draw"]))
-    //setDrawOpen(true)
-    //setTimeout(function(){ setDrawOpen(false) }, 3000)
   }
   const handleSet = () => {
     if(oneScore === 2){
       setLog(log.concat(["Player 1 Wins Set"]))
       setOneScore(0)
       setTwoScore(0)
-      //setSetOneOpen(true)
-      //setTimeout(function(){ setSetOneOpen(false) }, 3000);
     }
     else if(twoScore === 2){
       setLog(log.concat(["Player 2 Wins Set"]))
       setOneScore(0)
       setTwoScore(0)
-      //setSetTwoOpen(true)
-      //setTimeout(function(){ setSetOneOpen(false) }, 3000);
-    }
-    else{
-      //setScoreOpen(true)
-      //setTimeout(function(){ setScoreOpen(false) }, 3000);
     }
   }
   const handleError = () => {
     setErrorOpen(true)
     setTimeout(function(){ setErrorOpen(false) }, 3000);
   }
-
-  // const score = () => {
-  //   if( (moveOne==='rock'||moveOne==='paper'||moveOne==='scissors')
-  //    && (moveTwo==='rock'||moveTwo==='paper'||moveTwo==='scissors'))
-  //     if(moveOne==='rock'){
-  //       if(moveTwo==='rock')
-  //         handleDraw()
-  //       if(moveTwo==='paper')
-  //         handleTwoWin()
-  //       if(moveTwo==='scissors')
-  //         handleOneWin()
-  //     }
-  //     if(moveOne==='paper'){
-  //       if(moveTwo==='rock')
-  //         handleOneWin()
-  //       if(moveTwo==='paper')
-  //         handleDraw()
-  //       if(moveTwo==='scissors')
-  //         handleTwoWin()
-  //     }
-  //     if(moveOne==='scissors'){
-  //       if(moveTwo==='rock')
-  //         handleTwoWin()
-  //       if(moveTwo==='paper')
-  //         handleOneWin()
-  //       if(moveTwo==='scissors')
-  //         handleDraw()
-  //     }
-  //   // else
-  //   //   handleError()
-  // }
 
   const [openDialog, setOpenDialog] = React.useState(false);
 
@@ -228,6 +165,7 @@ export default function App() {
   const [user, setUser] = useState("")
   const [pass, setPass] = useState("")
   const [errorAlert, setErrorAlert] = useState(false)
+  const [successAlert, setSuccessAlert] = useState(false)
   const login = () => {
     fetch("http://localhost:3001/login", {
       method: 'POST',
@@ -241,7 +179,16 @@ export default function App() {
           password: pass
       })
     })
-    .then((res)=>console.log(res))
+    .then((res)=>{
+      if(res.status !== 200){
+        setErrorAlert(true)
+        setTimeout(function(){ setErrorAlert(false) }, 3000);
+      }
+      if(res.status === 200){
+        setSuccessAlert(true)
+        setTimeout(function(){ setSuccessAlert(false) }, 3000);
+      }
+    })
   }
   const signup = () => {
     fetch("http://localhost:3001/sign-up", {
@@ -255,10 +202,19 @@ export default function App() {
           password: pass
       })
     })
-    .then((res)=>console.log(res))
+    .then((res)=>{
+      if(res.status !== 200){
+        setErrorAlert(true)
+        setTimeout(function(){ setErrorAlert(false) }, 3000);
+      }
+      if(res.status === 200){
+        setSuccessAlert(true)
+        setTimeout(function(){ setSuccessAlert(false) }, 3000);
+      }
+    })
   }
 
-  const [drawerOpen, setDrawerOpen] = useState(true)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const handleDrawerOpen = () => {
     setDrawerOpen(true);
   };
@@ -266,12 +222,37 @@ export default function App() {
     setDrawerOpen(false);
   };
 
+  const [disabled, setDisabled] = useState(true)
+
   const [history, setHistory] = useState([])
+  const [leaderboard, setLeaderboard] = useState([])
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   useEffect(()=>{
-    fetch("http://localhost:3001/game-results")
-    .then((res)=>res.json())
-    .then((data)=>setHistory(data))
-  })
+    fetch("http://localhost:3001/is-logged-in", {credentials: 'include'})
+      .then((res)=>res.json())
+      .then((data)=> {
+        if(data.loggedIn===true)
+          setIsLoggedIn(data.loggedIn)
+        if(data.loggedIn==="admin")
+          setIsAdmin(true)
+      })
+    if(isAdmin)
+      fetch("http://localhost:3001/leaderboard", {credentials: 'include'})
+        .then((res)=>res.json())
+        .then((data)=>{
+          setLeaderboard(data)
+          setHistory([])
+        })
+    else if(!isLoggedIn)
+      fetch("http://localhost:3001/game-results", {credentials: 'include'})
+      .then((res)=>res.json())
+      .then((data)=>setHistory(data))
+    else
+      fetch("http://localhost:3001/game-results/user", {credentials: 'include'})
+      .then((res)=>res.json())
+      .then((data)=>setHistory(data))
+  }, [drawerOpen])
 
   return (
     <div className={classes.root}>
@@ -283,20 +264,32 @@ export default function App() {
           </Grid>
 
           <Grid item xs={6} className={classes.mt}>
-            <Grid item xs={10} >
-              <Typography variant="h5">Player 1:</Typography>
+            <Grid item xs={10}>
+              <TextField label="Player 1" defaultValue="Player 1" disabled={disabled} className={classes.ml} />
             </Grid>
             <Grid item xs={12}>
-              <FormControl className={classes.formControl}>
+              <FormControl className={[classes.formControl, classes.ml]}>
                 <InputLabel>Move</InputLabel>
                 <Select
                   value={moveOne}
-                  onChange={(e)=>setMoveOne(e.target.value)}
+                  onChange={(e)=>{
+                    if(e.target.value==="random"){
+                      var r = getRandomInt(3)
+                      if(r===0)
+                        setMoveOne("rock")
+                      if(r===1)
+                        setMoveOne("paper")
+                      if(r===2)
+                        setMoveOne("scissors")
+                    } else
+                      setMoveOne(e.target.value)
+                  }}
                   fullWidth
                 >
                   <MenuItem value={'rock'}>Rock</MenuItem>
                   <MenuItem value={'paper'}>Paper</MenuItem>
                   <MenuItem value={'scissors'}>Scissors</MenuItem>
+                  <MenuItem value={'random'}>Random</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -304,19 +297,31 @@ export default function App() {
 
           <Grid item xs={6} className={classes.mt}>
             <Grid item xs={12} >
-              <Typography variant="h5">Player 2:</Typography>
+            <TextField label="Player 2" defaultValue="Player 2" disabled={disabled}/>
             </Grid>
             <Grid item xs={12}>
-              <FormControl className={classes.formControl}>
+              <FormControl className={[classes.formControl, classes.l]}>
                 <InputLabel>Move</InputLabel>
                 <Select
                   value={moveTwo}
-                  onChange={(e)=>setMoveTwo(e.target.value)}
+                  onChange={(e)=>{
+                    if(e.target.value==="random"){
+                      var r = getRandomInt(3)
+                      if(r===0)
+                        setMoveTwo("rock")
+                      if(r===1)
+                        setMoveTwo("paper")
+                      if(r===2)
+                        setMoveTwo("scissors")
+                    } else
+                      setMoveTwo(e.target.value)
+                  }}
                   fullWidth
                 >
                   <MenuItem value={'rock'}>Rock</MenuItem>
                   <MenuItem value={'paper'}>Paper</MenuItem>
                   <MenuItem value={'scissors'}>Scissors</MenuItem>
+                  <MenuItem value={'random'}>Random</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -340,6 +345,19 @@ export default function App() {
                 Score
             </Button>
           </Grid>
+          <Grid item xs={1} />
+          <Grid item xs={2} className={classes.mt}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={disabled}
+                  onChange={()=>setDisabled(!disabled)}
+                  color="primary"
+                />
+              }
+              label="Lock"
+            />
+          </Grid>
 
           <Grid item xs={12} className={classes.mt}>
             {logRef.current.map((entry) => (
@@ -350,53 +368,27 @@ export default function App() {
           </Grid>
 
           <Grid item xs={12} className={classes.mt}>
-            {/* <Collapse in={oneWinsOpen}>
-              <Alert>
-                Player One Wins!
-              </Alert>
-            </Collapse>
-            <Collapse in={twoWinsOpen}>
-              <Alert severity="info">
-                Player Two Wins!
-              </Alert>
-            </Collapse>
-            <Collapse in={drawOpen}>
-              <Alert>
-                Draw!
-              </Alert>
-            </Collapse> */}
             <Collapse in={errorOpen}>
               <Alert severity="error">
                 Invalid Throw!
               </Alert>
             </Collapse>
-            {/* <Collapse in={scoreOpen}>
-              <Alert severity='info'>
-                Player 1 Score: {oneScore} / 3 games
-                Player 2 Score: {twoScore} / 3 games
-              </Alert>
-            </Collapse>
-            <Collapse in={setOneOpen}>
-              <Alert severity='info'>
-                Player 1 Wins the Set!
-              </Alert>
-            </Collapse>
-            <Collapse in={setTwoOpen}>
-              <Alert severity='info'>
-                Player 2 Wins the Set!
-              </Alert>
-            </Collapse> */}
           </Grid>
 
-          <Dialog open={openDialog} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
+          <Dialog open={openDialog} onClose={handleDialogClose}>
             <DialogTitle>Login</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 Login Helper Text
               </DialogContentText>
               <Collapse in={errorAlert}>
-                <Alert>
+                <Alert severity="error">
                   Error
+                </Alert>
+              </Collapse>
+              <Collapse in={successAlert}>
+                <Alert>
+                  Success
                 </Alert>
               </Collapse>
               <TextField
@@ -443,10 +435,14 @@ export default function App() {
                   {game.game_result_id}: {game.username} {game.won.toString().replace("true", "won").replace("false", "lost")} at {game.created_at}
                 </ListItem>
               ))}
+              {leaderboard.map((users) => (
+                <ListItem>
+                  {users.username}: {users.count}
+                </ListItem>
+              ))}
             </List>
             <Divider />
           </Drawer>
-
         </Grid>
       </Paper>
     </div>

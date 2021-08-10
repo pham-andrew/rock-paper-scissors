@@ -12,9 +12,9 @@ const PORT = process.env.PORT || 3001
 const app = express()
 
 // if you are running locally, uncomment the line below
-const knex = require('knex')(require('./knexfile.js')['development']);
+// const knex = require('knex')(require('./knexfile.js')['development']);
 // if you are running in deployed enviroment, uncomment the line below
-// const knex = require('knex')(require('./knexfile.js')[process.env.NODE_ENV]);
+const knex = require('knex')(require('./knexfile.js')[process.env.NODE_ENV]);
 
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}))
 app.use(express.json())
@@ -29,7 +29,6 @@ const requireAuth = (req, res, next) => {
   if (req.username) {
       next();
   } else {
-    console.log("user not logged in")
     res.status(404).send("There was an error, user must be logged in")
   }
 };
@@ -87,6 +86,26 @@ app.get('/game-results/user', requireAuth, (req, res) => {
   .then(response => res.status(200).send(response))
   .catch(err => res.status(404).send("no data found"))
 })
+
+app.get('/leaderboard', requireAuth, (req,res) => {
+  if (req.username === 'admin') {
+    knex.select('username').table('game_results').where('won', '=', true).count('won').groupBy('username').orderBy('count', 'desc')
+    .then(response => res.status(200).send(response))
+    .catch(err => res.status(404).send(err))
+  } else {
+    res.status(404).send("no data found")
+  }
+})
+
+app.get('/is-logged-in', requireAuth, function (req, res) {
+  if (req.username === 'admin') {
+    res.status(200).json({loggedIn: 'admin'})
+  } else {
+    res.status(200).json({loggedIn: true})
+  }
+})
+
+
 
 app.post('/login', (req, res) => {
   const {username, password} = req.body
