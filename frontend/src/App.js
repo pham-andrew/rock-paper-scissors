@@ -70,7 +70,7 @@ export default function App() {
   // const [setTwoOpen, setSetTwoOpen] = React.useState(false)
 
   const handleOneWin = () => {
-    setTwoScore(oneScore + 1)
+    setOneScore(oneScore + 1)
     setLog(log.concat(["Player 1 Wins, Score: " + oneScoreRef.current]))
     handleSet()
     //setOneWinsOpen(true)
@@ -144,24 +144,23 @@ export default function App() {
   //   //   handleError()
   // }
 
-  const [winner, setWinner] = React.useState("")
   const score = () => {
     fetch("http://localhost:3001/game?player1="+ moveOne +"&player2=" + moveTwo)
     .then((res)=>res.json())
-    .then((data)=>setWinner(data.results))
-    .then(()=>{
-      if(winner==='Player 1 Wins')
+    .then((data)=>{
+      if(data.results==='Player 1 Wins')
         handleOneWin()
-      if(winner==='Player 2 Wins')
+      if(data.results==='Player 2 Wins')
         handleTwoWin()
-      if(winner==='Draw')
+      if(data.results==='Draw')
         handleDraw()
     })
+    
   }
 
   useEffect(()=>{
-    
-  }, [rerender])
+
+  }, [rerender, log])
 
   return (
     <div className={classes.root}>
@@ -221,7 +220,7 @@ export default function App() {
           <Grid item xs={5} />
 
           <Grid item xs={12} className={classes.mt}>
-            {log.map((entry) => (
+            {logRef.current.map((entry) => (
               <Alert key={uuidv4()}>
                 {entry}
               </Alert>
