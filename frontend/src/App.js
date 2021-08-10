@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -46,17 +47,19 @@ export default function App() {
 
   const [oneScore, setOneScore] = React.useState(0)
   const [twoScore, setTwoScore] = React.useState(0)
+  const oneScoreRef = useRef(0)
+  const twoScoreRef = useRef(0)
+  oneScoreRef.current=oneScore
+  twoScoreRef.current=twoScore
 
   const [log, setLog] = React.useState([])
+  const logRef = useRef([])
+  logRef.current=log
 
   const [moveOne, setMoveOne] = React.useState('')
-  const playerOneMove = (event) => {
-    setMoveOne(event.target.value);
-  };
   const [moveTwo, setMoveTwo] = React.useState('')
-  const playerTwoMove = (event) => {
-    setMoveTwo(event.target.value);
-  };
+
+  const [rerender, triggerRerender] = useState(0);
 
   // const [oneWinsOpen, setOneWinsOpen] = React.useState(false)
   // const [twoWinsOpen, setTwoWinsOpen] = React.useState(false)
@@ -68,14 +71,14 @@ export default function App() {
 
   const handleOneWin = () => {
     setTwoScore(oneScore + 1)
-    setLog(log.concat(["Player 1 Wins, Score: " + oneScore]))
+    setLog(log.concat(["Player 1 Wins, Score: " + oneScoreRef.current]))
     handleSet()
     //setOneWinsOpen(true)
     //setTimeout(function(){ setOneWinsOpen(false) }, 3000)
   }
   const handleTwoWin = () => {
     setTwoScore(twoScore + 1)
-    setLog(log.concat(["Player 2 Wins, Score: " + twoScore]))
+    setLog(log.concat(["Player 2 Wins, Score: " + twoScoreRef.current]))
     handleSet()
     //setTwoWinsOpen(true)
     //setTimeout(function(){ setTwoWinsOpen(false) }, 3000)
@@ -86,14 +89,14 @@ export default function App() {
     //setTimeout(function(){ setDrawOpen(false) }, 3000)
   }
   const handleSet = () => {
-    if(oneScore === 3){
+    if(oneScore === 2){
       setLog(log.concat(["Player 1 Wins Set"]))
       setOneScore(0)
       setTwoScore(0)
       //setSetOneOpen(true)
       //setTimeout(function(){ setSetOneOpen(false) }, 3000);
     }
-    else if(twoScore === 3){
+    else if(twoScore === 2){
       setLog(log.concat(["Player 2 Wins Set"]))
       setOneScore(0)
       setTwoScore(0)
@@ -146,17 +149,19 @@ export default function App() {
     fetch("http://localhost:3001/game?player1="+ moveOne +"&player2=" + moveTwo)
     .then((res)=>res.json())
     .then((data)=>setWinner(data.results))
-    if(winner==='Player 1 Wins')
-      handleOneWin()
-    if(winner==='Player 2 Wins')
-      handleTwoWin()
-    if(winner==='Draw')
-      handleDraw()
+    .then(()=>{
+      if(winner==='Player 1 Wins')
+        handleOneWin()
+      if(winner==='Player 2 Wins')
+        handleTwoWin()
+      if(winner==='Draw')
+        handleDraw()
+    })
   }
 
   useEffect(()=>{
-    console.log(log)
-  }, [oneScore, twoScore])
+    
+  }, [rerender])
 
   return (
     <div className={classes.root}>
@@ -176,7 +181,7 @@ export default function App() {
                 <InputLabel>Move</InputLabel>
                 <Select
                   value={moveOne}
-                  onChange={playerOneMove}
+                  onChange={(e)=>setMoveOne(e.target.value)}
                   fullWidth
                 >
                   <MenuItem value={'rock'}>Rock</MenuItem>
@@ -196,7 +201,7 @@ export default function App() {
                 <InputLabel>Move</InputLabel>
                 <Select
                   value={moveTwo}
-                  onChange={playerTwoMove}
+                  onChange={(e)=>setMoveTwo(e.target.value)}
                   fullWidth
                 >
                   <MenuItem value={'rock'}>Rock</MenuItem>
@@ -209,7 +214,7 @@ export default function App() {
 
           <Grid item xs={5} />
           <Grid item xs={2} className={classes.mt}>
-            <Button variant="contained" component="label" onClick={score} color="secondary">
+            <Button variant="contained" component="label" onClick={()=>{score()}} color="secondary">
                 Score
             </Button>
           </Grid>
@@ -217,7 +222,7 @@ export default function App() {
 
           <Grid item xs={12} className={classes.mt}>
             {log.map((entry) => (
-              <Alert>
+              <Alert key={uuidv4()}>
                 {entry}
               </Alert>
             ))}
