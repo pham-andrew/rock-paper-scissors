@@ -9,7 +9,7 @@ exports.up = function(knex) {
   .then(() => {
     return knex.schema.createTable('game_results', table => {
       table.increments('game_result_id'); // adds an auto incrementing PK column
-      table.integer('user_id').references('user_id').inTable('users');
+      table.string('username').references('username').inTable('users');
       table.boolean('won');
       table.timestamp('created_at').defaultTo(knex.fn.now())
     })

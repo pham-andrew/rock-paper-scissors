@@ -13,12 +13,12 @@ exports.seed = function(knex) {
     .then(function () {
       // Inserts seed entries
       return knex('game_results').insert([
-        { user_id: 1, won: true },
-        { user_id: 1, won: true },
-        { user_id: 1, won: true },
-        { user_id: 2, won: true },
-        { user_id: 2, won: true },
-        { user_id: 2, won: false },
+        { username: 'testuser1', won: true },
+        { username: 'testuser1', won: true },
+        { username: 'testuser1', won: true },
+        { username: 'testuser2', won: true },
+        { username: 'testuser2', won: true },
+        { username: 'testuser2', won: false },
       ]);
     });
 };

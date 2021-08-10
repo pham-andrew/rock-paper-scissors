@@ -16,9 +16,23 @@ const knex = require('knex')(require('./knexfile.js')['development']);
 // if you are running in deployed enviroment, uncomment the line below
 // const knex = require('knex')(require('./knexfile.js')[process.env.NODE_ENV]);
 
-app.use(cors())
+app.use(cors({credentials: true, origin: 'http://localhost:3000'}))
 app.use(express.json())
 app.use(cookieParser())
+app.use((req, res, next) => {
+  const authToken = req.cookies['AuthToken'];
+  req.username = authTokens[authToken];
+  next();
+});
+
+const requireAuth = (req, res, next) => {
+  if (req.username) {
+      next();
+  } else {
+    console.log("user not logged in")
+    res.status(404).send("There was an error, user must be logged in")
+  }
+};
 
 const getHashedPassword = (password) => {
   const salt = crypto.randomBytes(16).toString('hex')
@@ -36,6 +50,8 @@ const getHashedPasswordLogin = (password, salt) => {
 const generateAuthToken = () => {
   return crypto.randomBytes(30).toString('hex');
 }
+
+const authTokens = {};
 
 function gameWinner(move1, move2) {
   if (move1 === move2) return 'Draw'
@@ -58,25 +74,44 @@ app.get('/game-results', function (req, res) {
 })
 
 
-app.post('/game-results', function (req, res) {
-  knex('game_results').insert(req.body)
+app.post('/game-results', requireAuth, function (req, res) {
+  console.log(req.username, req.body)
+  const {won} = req.body
+  knex('game_results').insert({username: req.username, won: won})
   .then(response => res.status(200).send("added results"))
   .catch(err => res.status(404).send("There was an error: ", err))
 })
 
+app.get('/game-results/user', requireAuth, (req, res) => {
+  knex('game_results').where('username', req.username)
+  .then(response => res.status(200).send(response))
+  .catch(err => res.status(404).send("no data found"))
+})
+
 app.post('/login', (req, res) => {
   const {username, password} = req.body
-  // get the salt and hashed password from the db
-  // has the password and see if they match
-
-  res.status(200).send("user signed in")
+  console.log(username, password)
+  knex.select('salt', 'password').table('users').where('username', username)
+  .then(response => {
+    const passwordHash = getHashedPasswordLogin(password, response[0].salt)
+    if (passwordHash === response[0].password) {
+      const authToken = generateAuthToken();
+      authTokens[authToken] = username;
+      res.cookie('AuthToken', authToken);
+      res.status(200).send("user logged in")
+    }
+    else {
+      res.status(401).send("incorrect password")
+    }
+  })
+  .catch(err => res.status(404).send("user does not exist"))
 })
 
 // this is only for testing
 app.get('/sign-up', (req, res) => {
   knex.select().table('users')
   .then(response => res.status(200).send(response))
-  .catch(err => res.status(404).send("There was an error: ", err))
+  .catch(err => res.status(404).send(err))
 
 })
 
